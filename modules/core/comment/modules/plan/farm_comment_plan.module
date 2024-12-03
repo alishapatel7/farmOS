@@ -20,3 +20,22 @@ function farm_comment_plan_entity_base_field_info(EntityTypeInterface $entity_ty
 
   return $fields;
 }
+
+/**
+ * Implements hook_form_alter().
+ */
+function farm_comment_plan_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id) {
+  // Target the module installation form.
+  if ($form_id === 'system_modules') {
+    // Check if there are any plan bundles.
+    $plan_bundles = \Drupal::entityTypeManager()->getStorage('plan_type')->loadMultiple();
+
+    // If no plan bundles exist, hide farm_comment_plan and its dependencies.
+    if (empty($plan_bundles)) {
+      if (isset($form['modules']['farm_comment_plan'])) {
+        $form['modules']['farm_comment_plan']['#access'] = FALSE;
+        drupal_set_message(t('The farm_comment_plan module is hidden because there are no plan entity bundles. Please create a plan type before enabling this module.'), 'warning');
+      }
+    }
+  }
+}
